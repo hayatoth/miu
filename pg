@@ -1,0 +1,275 @@
+
+import java.util.ArrayList;
+import java.util.Scanner;
+
+class Video {
+    String title;
+    String url;
+
+    public Video(String title, String url) {
+        this.title = title;
+        this.url = url;
+    }
+}
+
+class Playlist {
+    String name;
+    ArrayList<Video> videos = new ArrayList<>();
+
+    public Playlist(String name) {
+        this.name = name;
+    }
+}
+
+public class YouTubePlaylistSystem {
+
+    static Scanner sc = new Scanner(System.in);
+    static ArrayList<Playlist> playlists = new ArrayList<>();
+
+    public static void main(String[] args) {
+        int choice;
+
+        do {
+            System.out.println("\n===== YOUTUBE PLAYLIST SYSTEM =====");
+            System.out.println("1. Create Playlist");
+            System.out.println("2. Add Video");
+            System.out.println("3. Show All Playlists");
+            System.out.println("4. Show Videos in Playlist");
+            System.out.println("5. Search Video");
+            System.out.println("6. Delete Video");
+            System.out.println("7. Open YouTube Link");
+            System.out.println("0. Exit");
+            System.out.print("Choose menu: ");
+
+            choice = readInt();
+
+            switch (choice) {
+                case 1:
+                    createPlaylist();
+                    break;
+                case 2:
+                    addVideo();
+                    break;
+                case 3:
+                    showPlaylists();
+                    break;
+                case 4:
+                    showVideos();
+                    break;
+                case 5:
+                    searchVideo();
+                    break;
+                case 6:
+                    deleteVideo();
+                    break;
+                case 7:
+                    openVideo();
+                    break;
+                case 0:
+                    System.out.println("Exit program. Thank you!");
+                    break;
+                default:
+                    System.out.println("Invalid menu. Please try again.");
+            }
+
+        } while (choice != 0);
+
+        sc.close();
+    }
+
+    // อ่านตัวเลขและป้องกันการกรอกข้อมูลผิดประเภท
+    static int readInt() {
+        while (true) {
+            String input = sc.nextLine().trim();
+
+            try {
+                return Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                System.out.print("Please enter a number: ");
+            }
+        }
+    }
+
+    // 1. สร้าง Playlist
+    static void createPlaylist() {
+        System.out.print("Playlist name: ");
+        String name = sc.nextLine().trim();
+
+        if (name.isEmpty()) {
+            System.out.println("Playlist name cannot be empty.");
+            return;
+        }
+
+        for (Playlist p : playlists) {
+            if (p.name.equalsIgnoreCase(name)) {
+                System.out.println("This Playlist already exists.");
+                return;
+            }
+        }
+
+        playlists.add(new Playlist(name));
+        System.out.println("Playlist created successfully!");
+    }
+
+    // เลือก Playlist ด้วยหมายเลข
+    static Playlist choosePlaylist() {
+        if (playlists.isEmpty()) {
+            System.out.println("No Playlist found. Create one first.");
+            return null;
+        }
+
+        showPlaylists();
+        System.out.print("Choose Playlist number: ");
+        int number = readInt();
+
+        if (number < 1 || number > playlists.size()) {
+            System.out.println("Invalid Playlist number.");
+            return null;
+        }
+
+        return playlists.get(number - 1);
+    }
+
+    // 2. เพิ่มวิดีโอ
+    static void addVideo() {
+        Playlist p = choosePlaylist();
+        if (p == null) return;
+
+        System.out.print("Video title: ");
+        String title = sc.nextLine().trim();
+
+        if (title.isEmpty()) {
+            System.out.println("Video title cannot be empty.");
+            return;
+        }
+
+        System.out.print("YouTube URL: ");
+        String url = sc.nextLine().trim();
+
+        if (!(url.startsWith("https://www.youtube.com/")
+                || url.startsWith("https://youtu.be/"))) {
+            System.out.println("Invalid YouTube URL.");
+            return;
+        }
+
+        p.videos.add(new Video(title, url));
+        System.out.println("Video added successfully!");
+    }
+
+    // 3. แสดง Playlist ทั้งหมด
+    static void showPlaylists() {
+        if (playlists.isEmpty()) {
+            System.out.println("No Playlist found.");
+            return;
+        }
+
+        System.out.println("\n----- ALL PLAYLISTS -----");
+
+        for (int i = 0; i < playlists.size(); i++) {
+            Playlist p = playlists.get(i);
+            System.out.println(
+                (i + 1) + ". " + p.name
+                + " (" + p.videos.size() + " videos)"
+            );
+        }
+    }
+
+    // 4. แสดงวิดีโอใน Playlist
+    static void showVideos() {
+        Playlist p = choosePlaylist();
+        if (p == null) return;
+
+        System.out.println("\nPlaylist: " + p.name);
+
+        if (p.videos.isEmpty()) {
+            System.out.println("No videos in this Playlist.");
+            return;
+        }
+
+        for (int i = 0; i < p.videos.size(); i++) {
+            Video v = p.videos.get(i);
+            System.out.println((i + 1) + ". " + v.title);
+            System.out.println("   URL: " + v.url);
+        }
+    }
+
+    // 5. ค้นหาวิดีโอจากชื่อ
+    static void searchVideo() {
+        System.out.print("Enter video title to search: ");
+        String keyword = sc.nextLine().trim().toLowerCase();
+
+        boolean found = false;
+
+        for (Playlist p : playlists) {
+            for (Video v : p.videos) {
+                if (v.title.toLowerCase().contains(keyword)) {
+                    System.out.println("Playlist: " + p.name);
+                    System.out.println("Video: " + v.title);
+                    System.out.println("URL: " + v.url);
+                    found = true;
+                }
+            }
+        }
+
+        if (!found) {
+            System.out.println("Video not found.");
+        }
+    }
+
+    // 6. ลบวิดีโอ
+    static void deleteVideo() {
+        Playlist p = choosePlaylist();
+        if (p == null) return;
+
+        if (p.videos.isEmpty()) {
+            System.out.println("No videos to delete.");
+            return;
+        }
+
+        for (int i = 0; i < p.videos.size(); i++) {
+            System.out.println(
+                (i + 1) + ". " + p.videos.get(i).title
+            );
+        }
+
+        System.out.print("Choose video number to delete: ");
+        int number = readInt();
+
+        if (number < 1 || number > p.videos.size()) {
+            System.out.println("Invalid video number.");
+            return;
+        }
+
+        Video removed = p.videos.remove(number - 1);
+        System.out.println("Deleted: " + removed.title);
+    }
+
+    // 7. เลือกวิดีโอเพื่อเปิดลิงก์
+    static void openVideo() {
+        Playlist p = choosePlaylist();
+        if (p == null) return;
+
+        if (p.videos.isEmpty()) {
+            System.out.println("No videos in this Playlist.");
+            return;
+        }
+
+        for (int i = 0; i < p.videos.size(); i++) {
+            System.out.println(
+                (i + 1) + ". " + p.videos.get(i).title
+            );
+        }
+
+        System.out.print("Choose video number: ");
+        int number = readInt();
+
+        if (number < 1 || number > p.videos.size()) {
+            System.out.println("Invalid video number.");
+            return;
+        }
+
+        System.out.println("YouTube URL:");
+        System.out.println(p.videos.get(number - 1).url);
+        System.out.println("Copy the URL into your browser to watch.");
+    }
+}
